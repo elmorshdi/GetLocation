@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlin-android-extensions'
 }
 
@@ -33,6 +33,14 @@ android {
     }
     buildFeatures {
         viewBinding true
+    }
+    def localProperties = new Properties()
+    localProperties.load(new FileInputStream("local.properties"))
+
+    buildTypes {
+        debug {
+            resValue("string", "google_map_api_key", localProperties['MAPS_API_KEY'])
+         }
     }
 }
 

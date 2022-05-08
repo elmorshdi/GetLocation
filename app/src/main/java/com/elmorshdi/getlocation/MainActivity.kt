@@ -3,14 +3,13 @@ package com.elmorshdi.getlocation
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var button: AppCompatButton
@@ -40,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
+     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
                                             grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
@@ -59,4 +58,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
 }

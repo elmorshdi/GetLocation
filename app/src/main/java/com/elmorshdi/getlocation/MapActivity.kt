@@ -1,9 +1,13 @@
 package com.elmorshdi.getlocation
 
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import android.os.Looper
+import androidx.core.location.LocationManagerCompat.requestLocationUpdates
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -13,15 +17,17 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 
 class MapActivity : AppCompatActivity() , OnMapReadyCallback ,
-    GoogleMap.OnMarkerClickListener {
+    GoogleMap.OnMarkerClickListener
+{
+   private lateinit var loca:Location
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
+    private var locationCallback: LocationCallback? = null
+    private var locationRequest : LocationRequest?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
+           val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -33,19 +39,54 @@ class MapActivity : AppCompatActivity() , OnMapReadyCallback ,
         mMap = googleMap
         mMap.uiSettings.isZoomControlsEnabled = true
         mMap.setOnMarkerClickListener(this)
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(
-            MarkerOptions()
-            .position(sydney)
-            .title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney,12.0f))
+          getLastKnownLocation {
+            val sydney = LatLng(it.latitude, it.longitude)
+              loca.set(it)
+            mMap.addMarker(
+                    MarkerOptions()
+                        .position(sydney)
+                        .title("Marker in Sydney"))
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney,8.0f))
+
+        }
 
     }
 
     override fun onMarkerClick(p0: Marker): Boolean {
-        TODO("Not yet implemented")
+        val intent= Intent(applicationContext,MainActivity::class.java)
+        intent.putExtra("LOCATION","latitude:${loca.latitude} , longitude:${loca.longitude}")
+        startActivity(intent)
+        return true
+    }
+    @SuppressLint("MissingPermission")
+    fun getLastKnownLocation(onlocationAvailable: (Location) -> Unit) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null)
+                onlocationAvailable(location)
+            else
+                createLocationRequest(onlocationAvailable)
+        }
     }
 
+    private fun createLocationRequest(onlocationAvailable: (Location) -> Unit) {
+        locationRequest = LocationRequest.create().apply {
+            interval = 5000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
 
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                for(location in result.locations){
+                    onlocationAvailable(location)
+                }
+            }
+        }
+        requestLocationUpdates()
+    }
+    @SuppressLint("MissingPermission")
+    private fun requestLocationUpdates(){
+        if(locationCallback !=null && locationRequest !=null)
+            fusedLocationClient.requestLocationUpdates(locationRequest!!, locationCallback!!, Looper.myLooper()!! )
+    }
 }
