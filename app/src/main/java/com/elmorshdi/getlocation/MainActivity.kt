@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
@@ -13,11 +14,17 @@ import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
     private lateinit var button: AppCompatButton
+    private lateinit var textView: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         title = "My Map"
+        textView=findViewById(R.id.location)
         button=findViewById(R.id.get_button)
+
+            if(intent.getStringExtra("LOCATION")!=null) {
+
+            textView.text=intent.getStringExtra("LOCATION")}
         button.setOnClickListener {
             if (ContextCompat.checkSelfPermission(this@MainActivity,android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity,
