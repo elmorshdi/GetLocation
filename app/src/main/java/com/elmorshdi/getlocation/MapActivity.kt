@@ -2,30 +2,27 @@ package com.elmorshdi.getlocation
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.location.LocationManagerCompat.requestLocationUpdates
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 
 
-class MapActivity : AppCompatActivity() , OnMapReadyCallback ,
-    GoogleMap.OnMarkerClickListener
-{
-  // private lateinit var loca:Location
+class MapActivity : AppCompatActivity(), OnMapReadyCallback,
+    GoogleMap.OnMarkerClickListener {
+    // private lateinit var loca:Location
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationCallback: LocationCallback? = null
-    private var locationRequest : LocationRequest?= null
+    private var locationRequest: LocationRequest? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
@@ -38,47 +35,53 @@ class MapActivity : AppCompatActivity() , OnMapReadyCallback ,
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        mMap.uiSettings.isZoomControlsEnabled = true
-        mMap.setOnMarkerClickListener(this)
-
+        val myLocation = Location("provider")
         getLastKnownLocation {
-            val sydney = LatLng(it.latitude, it.longitude)
-              //loca.set(it)
+            myLocation.latitude=it.latitude
+            myLocation.longitude=it.longitude
             mMap.addMarker(
-                    MarkerOptions()
-                        .position(sydney)
-                        .title("Marker in Sydney"))
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney,8.0f))
+                MarkerOptions()
+                    .position(LatLng(it.latitude,it.longitude))
+                    .title("Marker in myLocation")
+            )
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude,it.longitude), 12.0f))
 
         }
 
-            mMap.setOnMarkerDragListener(object : OnMarkerDragListener {
-    override fun onMarkerDragStart(marker: Marker) {
-        // TODO Auto-generated method stub
+        mMap.uiSettings.isZoomControlsEnabled = true
+        mMap.setOnMarkerClickListener(this)
+        mMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
+        mMap.setOnMapLongClickListener {
+            mMap.clear()
+            mMap.addMarker(MarkerOptions().position(it))
+            mMap.addMarker(MarkerOptions().position(LatLng(myLocation.latitude,myLocation.longitude)))
+
+            mMap.addPolygon(
+                PolygonOptions()
+                    .add(it)
+                    .add(LatLng(myLocation.latitude,myLocation.longitude))
+                    .strokeColor(Color.RED)
+            )
+
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 12.0f))
+            val result = FloatArray(1)
+
+            Location.distanceBetween(myLocation.latitude,myLocation.longitude,it.latitude,it.longitude,result)
+            Toast.makeText(applicationContext,result[0].toString(),Toast.LENGTH_LONG).show()
+        }
+
     }
 
-    override fun onMarkerDragEnd(marker: Marker) {
-        // TODO Auto-generated method stub
-        mMap.addMarker(
-            MarkerOptions()
-                .position(marker.position)
-                .title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.position,8.0f))
-
-    }
-
-    override fun onMarkerDrag(marker: Marker) {
-        // TODO Auto-generated method stub
-    }
-})
-
-}
     override fun onMarkerClick(p0: Marker): Boolean {
-        val intent= Intent(applicationContext,MainActivity::class.java)
-        intent.putExtra("LOCATION","latitude:${p0.position.latitude} , longitude:${p0.position.longitude}")
+        val intent = Intent(applicationContext, MainActivity::class.java)
+        intent.putExtra(
+            "LOCATION",
+            "latitude:${p0.position.latitude} , longitude:${p0.position.longitude}"
+        )
         startActivity(intent)
         return true
     }
+
     @SuppressLint("MissingPermission")
     fun getLastKnownLocation(onlocationAvailable: (Location) -> Unit) {
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
@@ -98,16 +101,21 @@ class MapActivity : AppCompatActivity() , OnMapReadyCallback ,
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
-                for(location in result.locations){
+                for (location in result.locations) {
                     onlocationAvailable(location)
                 }
             }
         }
         requestLocationUpdates()
     }
+
     @SuppressLint("MissingPermission")
-    private fun requestLocationUpdates(){
-        if(locationCallback !=null && locationRequest !=null)
-            fusedLocationClient.requestLocationUpdates(locationRequest!!, locationCallback!!, Looper.myLooper()!! )
+    private fun requestLocationUpdates() {
+        if (locationCallback != null && locationRequest != null)
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest!!,
+                locationCallback!!,
+                Looper.myLooper()!!
+            )
     }
 }

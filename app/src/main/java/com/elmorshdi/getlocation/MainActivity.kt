@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
 
             textView.text=intent.getStringExtra("LOCATION")}
         button.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this@MainActivity,android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this@MainActivity,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity,
                         Manifest.permission.ACCESS_FINE_LOCATION)) {
                     Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
