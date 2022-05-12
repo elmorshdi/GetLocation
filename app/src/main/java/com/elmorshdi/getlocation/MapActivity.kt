@@ -14,6 +14,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import kotlin.math.roundToInt
 
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -62,14 +63,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                     .add(LatLng(myLocation.latitude,myLocation.longitude))
                     .strokeColor(Color.RED)
             )
-
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 12.0f))
             val result = FloatArray(1)
-
             Location.distanceBetween(myLocation.latitude,myLocation.longitude,it.latitude,it.longitude,result)
-            Toast.makeText(applicationContext,result[0].toString(),Toast.LENGTH_LONG).show()
+            Toast.makeText(applicationContext,"${result[0].roundToInt()} meter",Toast.LENGTH_LONG).show()
         }
-
     }
 
     override fun onMarkerClick(p0: Marker): Boolean {
@@ -83,16 +81,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(onlocationAvailable: (Location) -> Unit) {
+    fun getLastKnownLocation(onLocationAvailable: (Location) -> Unit) {
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null)
-                onlocationAvailable(location)
+                onLocationAvailable(location)
             else
-                createLocationRequest(onlocationAvailable)
+                createLocationRequest(onLocationAvailable)
         }
     }
 
-    private fun createLocationRequest(onlocationAvailable: (Location) -> Unit) {
+    private fun createLocationRequest(onLocationAvailable: (Location) -> Unit) {
         locationRequest = LocationRequest.create().apply {
             interval = 5000
             fastestInterval = 5000
@@ -102,7 +100,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 for (location in result.locations) {
-                    onlocationAvailable(location)
+                    onLocationAvailable(location)
                 }
             }
         }
