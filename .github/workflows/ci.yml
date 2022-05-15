@@ -1,17 +1,17 @@
+name: CI
 
-cache:
-  paths:
-    - .gradle/
+on: [push]
 
+jobs:
+  build:
 
-stages:
-  - build
+    runs-on: ubuntu-latest
 
-
-build:
-  stage: build
-  script:
-    - ./gradlew assembleDebug
-  artifacts:
-    paths:
-      - app/build/outputs/
+    steps:
+      - uses: actions/checkout@v1
+      - name: Run a one-line script
+        run: echo Hello, world!
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
