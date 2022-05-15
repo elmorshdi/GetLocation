@@ -19,7 +19,6 @@ import kotlin.math.roundToInt
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     GoogleMap.OnMarkerClickListener {
-    // private lateinit var loca:Location
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationCallback: LocationCallback? = null
